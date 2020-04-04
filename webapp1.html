@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="initial-scale=1, width=device-width" name="viewport"/>
+
+        <!-- http://getbootstrap.com/ -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+
+        <!-- app's own CSS -->
+        <link href="{{ url_for('static', filename='webapp1.css') }}" rel="stylesheet"/>
+
+        <!-- http://jquery.com/ -->
+        <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
+        <!-- http://getbootstrap.com/ -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+        <!-- http://stewartjpark.com/Flask-JSGlue/ -->
+        {{ JSGlue.include() }}
+
+        <!-- app's own JavaScript -->
+        <script>
+
+
+        $(document).ready(function(){
+            getLocation();
+        });
+
+        function getLocation() {
+
+
+            var geo=navigator.geolocation;
+            if (geo)
+            {
+                alert("Using your current position");
+                event.preventDefault();
+                geo.getCurrentPosition(geo_success,geo_error);
+                }
+        }
+
+        function geo_success(position) {
+
+            console.log(position.coords.latitude);
+            console.log(position.coords.longitude);
+
+            var lat= position.coords.latitude;
+            var lon= position.coords.longitude;
+            var url = "/coordinates?lat="+lat+"&lon="+lon;
+
+            $.getJSON(url, function(data){
+
+            var obj1 = data["nearby_restaurants"];
+            console.log(data);
+            var n=obj1.length;
+            var hdstart="<tr>";
+            hdstart += "<th>" + "Restaurant" + "</th>" + "<th>" + "User-Rating" + "</th>" + "<th>" + "Cuisine" + "</th>" + "<th>" + "Average Cost For Two" + "</th>";
+            var hdend = hdstart + "</tr>";
+            $("#b").append(hdend);
+            /*global r*/
+            r="{{r}}".charAt(0);
+            console.log(r);
+            for(var i=0;i<n;i++)
+            {
+                if (parseFloat(obj1[i]["restaurant"]["user_rating"]["aggregate_rating"])>=parseFloat(r))
+                {
+                    var start="<tr>";
+                    start += "<td>" + obj1[i]["restaurant"]["name"] + "</td>" + "<td>" + obj1[i]["restaurant"]["user_rating"]["aggregate_rating"] + "</td>" + "<td>" + obj1[i]["restaurant"]["cuisines"] + "</td>" + "<td>" + obj1[i]["restaurant"]["average_cost_for_two"] + "</td>";
+                    var end = start + "</tr>";
+                    $("#b").append(end);
+                }
+            }
+
+
+            });
+        }
+
+        function geo_error() {
+            alert("Sorry, no position available.");
+        }
+
+        </script>
+
+    </head>
+    <body>
+
+        <div class="container-fluid">
+
+            <!-- http://getbootstrap.com/css/#forms -->
+
+            <table id="b" class="table table-striped">
+
+            </table>
+
+        </div>
+
+    </body>
+</html>
